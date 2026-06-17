@@ -1327,6 +1327,11 @@ if not raw_df.empty:
     if selected_symbol_col in filtered_df.columns:
         core_sequence.append(selected_symbol_col)
 
+    # ── % Delivery goes 2nd — right after NSE Code ──────────────────────────
+    delivery_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
+    if delivery_target and delivery_target not in core_sequence:
+        core_sequence.append(delivery_target)
+
     vol_target = next((c for c in actual_cols if "Volume" in c.lower()), None)
     if vol_target and vol_target not in core_sequence: core_sequence.append(vol_target)
 
@@ -1471,12 +1476,19 @@ if not raw_df.empty:
         if is_first_visible_column: is_first_visible_column = False
 
         c_low = col.lower()
+        # Default sort: % Delivery column sorts descending on load
+        is_delivery_col = "delivery" in c_low
+        sort_val   = "desc" if is_delivery_col else None
+        sort_index = 0      if is_delivery_col else None
+
         if col == selected_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style)
+                editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style,
+                sort=sort_val, sortIndex=sort_index)
         else:
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                editable=False, pinned=pinned_value, cellStyle=exact_mirror_style)
+                editable=False, pinned=pinned_value, cellStyle=exact_mirror_style,
+                sort=sort_val, sortIndex=sort_index)
 
     gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True)
     grid_options = gb.build()
