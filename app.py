@@ -17,7 +17,7 @@ import google.generativeai as genai
 # ==========================================
 # ⚙️ PAGE CONFIGURATION
 # ==========================================
-st.set_page_config(page_title="NF-Top 250 NSE Stock-Turnover Breakout Dashboard", layout="wide", page_icon="📊")
+st.set_page_config(page_title="NF-750-Delivery % (+V), layout="wide", page_icon="📊")
 
 # ==========================================
 # 🤖 CONFIGURE AI (GEMINI + GROQ)
@@ -207,7 +207,7 @@ import yfinance as yf
 import streamlit as st
 from datetime import datetime
 
-st.markdown("<p style='font-size:0.85rem; font-weight:bold; margin:0; padding:0;'>📊 NF-Top 250 NSE Stock-Turnover Breakout Dashboard</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:0.85rem; font-weight:bold; margin:0; padding:0;'>📊 NF-750-Delivery % (+V) Dashboard</p>", unsafe_allow_html=True)
 st.caption(f"Data refreshed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 @st.cache_data(ttl=60)
@@ -852,13 +852,13 @@ def compute_bottom_fishing_score(row, actual_cols):
     if vol and vol > 0:
         if vol >= 10_000_000:
             score += 10
-            reasons.append(f"✅ High turnover: {vol:,.0f}")
+            reasons.append(f"✅ High Volume: {vol:,.0f}")
         elif vol >= 1_000_000:
             score += 6
-            reasons.append(f"🟡 Moderate turnover: {vol:,.0f}")
+            reasons.append(f"🟡 Moderate Volume: {vol:,.0f}")
         else:
             score += 2
-            reasons.append(f"⚠️ Low turnover: {vol:,.0f}")
+            reasons.append(f"⚠️ Low Volume: {vol:,.0f}")
 
     # 4. Zero or Low Debt (max 10 pts)
     de = get_num(["d/e ratio", "debt", "d/e"])
@@ -1244,7 +1244,7 @@ if not raw_df.empty:
     high_pct_col = next((c for c in actual_cols if "52" in c.lower() and "high" in c.lower() and ("%" in c.lower() or "per" in c.lower())), None)
     if high_pct_col: filtered_df = apply_numeric_slider(filtered_df, high_pct_col, st.sidebar, "From 52W High Range:")
 
-    numeric_targets = ["Turnover", "CMP", "Price %", "Promoters %", "Institutional %", "Face Value", "Net Profit", "EPS", "RONW %", "Market Cap", "Enterprise Value"]
+    numeric_targets = ["Volume", "CMP", "Price %", "Promoters %", "Institutional %", "Face Value", "Net Profit", "EPS", "RONW %", "Market Cap", "Enterprise Value"]
     processed_cols = {diff_200_col, low_pct_col, high_pct_col}
     for target in numeric_targets:
         col_match = next((c for c in actual_cols if target.lower() in c.lower() and c not in processed_cols), None)
@@ -1327,7 +1327,7 @@ if not raw_df.empty:
     if selected_symbol_col in filtered_df.columns:
         core_sequence.append(selected_symbol_col)
 
-    vol_target = next((c for c in actual_cols if "turnover" in c.lower()), None)
+    vol_target = next((c for c in actual_cols if "Volume" in c.lower()), None)
     if vol_target and vol_target not in core_sequence: core_sequence.append(vol_target)
 
     close_target = next((c for c in actual_cols if "close price" in c.lower() or "prev" in c.lower()), None)
@@ -2345,7 +2345,7 @@ Be specific, data-driven, and actionable for a retail investor.
     horizons = [
         "1 Day", "2 Day", "3 Day", "5 Day", "7 Day", "10 Day", "12 Day", "15 Days", "20 Days", "25 Days", "30 Days",
         "2 Months", "3 Months", "4 Months", "5 Months", "6 Months", "7 Months", "8 Months", "9 Months", "10 Months", "11 Months",
-        "1 Year", "18 Months", "1.5 Years", "2 Years", "2.5 Years", "3 Years", "Turnover"
+        "1 Year", "18 Months", "1.5 Years", "2 Years", "2.5 Years", "3 Years", "Volume"
     ]
 
     col_tools1, col_tools2, col_tools3 = st.columns([2, 2, 3])
@@ -2359,7 +2359,7 @@ Be specific, data-driven, and actionable for a retail investor.
     detected_metric_map = {}
 
     for h in horizons:
-        if h == "Turnover":
+        if h == "Volume":
             if vol_target: detected_metric_map[h] = vol_target
             continue
         keywords = [h.lower(), h.lower().replace(" ", ""), h.lower().replace("s", "")]
@@ -2411,7 +2411,7 @@ Be specific, data-driven, and actionable for a retail investor.
         display_perf_df = perf_df.copy()
         for h in detected_metric_map.keys():
             if h in display_perf_df.columns:
-                if h == "Turnover":
+                if h == "Volume":
                     display_perf_df[h] = display_perf_df[h].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "-")
                 else:
                     display_perf_df[h] = display_perf_df[h].apply(lambda x: f"+{x:.2f}%" if x > 0 else (f"{x:.2f}%" if x < 0 else "0.00%"))
@@ -2422,7 +2422,7 @@ Be specific, data-driven, and actionable for a retail investor.
 
         color_code_js = JsCode("""
         function(params) {
-            if (params.value === undefined || params.value === null || params.colDef.field === "Turnover") return null;
+            if (params.value === undefined || params.value === null || params.colDef.field === "Volume") return null;
             let val = parseFloat(String(params.value).replace(/[+%,]/g, ''));
             if (val > 0) return { 'color': '#000000', 'backgroundColor': '#e6f4ea', 'fontWeight': 'bold' };
             if (val < 0) return { 'color': '#000000', 'backgroundColor': '#fce8e6', 'fontWeight': 'bold' };
