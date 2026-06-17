@@ -17,7 +17,7 @@ import google.generativeai as genai
 # ==========================================
 # ⚙️ PAGE CONFIGURATION
 # ==========================================
-st.set_page_config(page_title="NF-750-Delivery % (+V), layout="wide", page_icon="📊")
+st.set_page_config(page_title="NF-750-Delivery % (+V)", layout="wide", page_icon="📊")
 
 # ==========================================
 # 🤖 CONFIGURE AI (GEMINI + GROQ)
