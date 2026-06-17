@@ -318,7 +318,7 @@ def load_sheet_data_with_colors(sheet_name):
         creds = Credentials.from_service_account_info(service_account_info, scopes=scope)
         client = gspread.authorize(creds)
 
-        spreadsheet_id = "1UojzsJDrxwszCbr81v-fiix8lnvTGuzh-kR5_32bfrc"
+        spreadsheet_id = "1ayxuNlYGuJ0FKKCb7RoRL90ifwsAAx2aN6mmhO-37P8"
         encoded_sheet = urllib.parse.quote(sheet_name)
 
         authed_session = AuthorizedSession(creds)
@@ -957,7 +957,7 @@ def get_gspread_client():
     creds = Credentials.from_service_account_info(info, scopes=scope)
     return gspread.authorize(creds)
 
-SPREADSHEET_ID = "1UojzsJDrxwszCbr81v-fiix8lnvTGuzh-kR5_32bfrc"
+SPREADSHEET_ID = "1ayxuNlYGuJ0FKKCb7RoRL90ifwsAAx2aN6mmhO-37P8"
 
 def ensure_watchlist_sheet(client):
     """Create Watchlist sheet if it doesn't exist; return worksheet."""
