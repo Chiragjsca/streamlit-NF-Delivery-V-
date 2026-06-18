@@ -369,11 +369,7 @@ def load_sheet_data_with_colors(sheet_name):
     except Exception as e:
         return pd.DataFrame()
 
-@st.cache_data(ttl=300, show_spinner=False)
 def process_hyperlinks(df, symbol_col):
-    """Build HTML hyperlinks for all link columns.
-    Cached for 300 s — matches the sheet data TTL so it only
-    rebuilds when fresh sheet data arrives, NOT on stock selections."""
     df_proc = df.copy()
     df_proc['_raw_symbol_'] = df_proc[symbol_col]
 
@@ -927,7 +923,22 @@ def compute_bottom_fishing_score(row, actual_cols):
         else:
             reasons.append(f"❌ High Pledge: {pledge:.1f}%")
 
-    # 9. Good Revenue / Net Sales (max 0 pts — qualitative flag)
+    # 9. High % Delivery (max 10 pts) — genuine buying vs intraday speculation
+    delivery_pct = get_num(["% delivery", "delivery"])
+    if delivery_pct is not None:
+        if delivery_pct >= 70:
+            score += 10
+            reasons.append(f"✅ % Delivery: {delivery_pct:.1f}% (strong institutional buying)")
+        elif delivery_pct >= 50:
+            score += 6
+            reasons.append(f"🟡 % Delivery: {delivery_pct:.1f}% (moderate genuine buying)")
+        elif delivery_pct >= 30:
+            score += 3
+            reasons.append(f"⚠️ % Delivery: {delivery_pct:.1f}% (mostly intraday)")
+        else:
+            reasons.append(f"❌ % Delivery: {delivery_pct:.1f}% (speculative / intraday dominated)")
+
+    # 10. Good Revenue / Net Sales (max 0 pts — qualitative flag)
     sales = get_num(["net sales", "net sale"])
     if sales and sales > 0:
         reasons.append(f"📊 Net Sales: ₹{sales:.1f} Cr")
@@ -1447,73 +1458,55 @@ if not raw_df.empty:
     }
     """)
 
-    # ── Cache GridOptions: only rebuild when sheet / columns / filters change ──
-    # A stock-selection rerun never changes columns or sizing → use cached opts.
-    _go_cols_sig = str(list(filtered_df.columns))
-    _go_row_sig  = (str(list(filtered_df.iloc[0]))[:120]
-                    if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0
-                    else (str(list(filtered_df.iloc[1]))[:120]
-                          if sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1
-                          else ""))
-    _go_cache_key = (f"{selected_sheet}|{selected_symbol_col}|{sizing_mode}"
-                     f"|{len(filtered_df)}|{_go_cols_sig[:300]}|{_go_row_sig}")
+    gb = GridOptionsBuilder.from_dataframe(filtered_df)
+    gb.configure_selection(selection_mode="single", use_checkbox=True)
+    gb.configure_side_bar(filters_panel=False, columns_panel=True)
 
-    if st.session_state.get("_go_cache_key") != _go_cache_key:
-        gb = GridOptionsBuilder.from_dataframe(filtered_df)
-        gb.configure_selection(selection_mode="single", use_checkbox=True)
-        gb.configure_side_bar(filters_panel=False, columns_panel=True)
+    priority_columns_lower = ["nse code", "id", "company name", "stock name", "symbol", "industry", "sector"]
+    is_first_visible_column = True
 
-        priority_columns_lower = ["nse code", "id", "company name", "stock name", "symbol", "industry", "sector"]
-        is_first_visible_column = True
+    for col in filtered_df.columns:
+        if col.startswith("_bg_") or col.startswith("_txt_") or col == "_raw_symbol_":
+            gb.configure_column(col, hide=True)
+            continue
 
-        for col in filtered_df.columns:
-            if col.startswith("_bg_") or col.startswith("_txt_") or col == "_raw_symbol_":
-                gb.configure_column(col, hide=True)
-                continue
+        if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0:
+            char_count = get_clean_text_length(filtered_df.iloc[0][col])
+            header_count = len(str(col))
+            base_calc = int(max(char_count, header_count) * 7 + 22)
+            if is_first_visible_column: base_calc += 30
+            width, min_width = (base_calc, 40)
 
-            if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0:
-                char_count = get_clean_text_length(filtered_df.iloc[0][col])
-                header_count = len(str(col))
-                base_calc = int(max(char_count, header_count) * 7 + 22)
-                if is_first_visible_column: base_calc += 30
-                width, min_width = (base_calc, 40)
+        elif sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1:
+            char_count = get_clean_text_length(filtered_df.iloc[1][col])
+            header_count = len(str(col))
+            base_calc = int(max(char_count, header_count) * 7 + 22)
+            if is_first_visible_column: base_calc += 30
+            width, min_width = (base_calc, 40)
 
-            elif sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1:
-                char_count = get_clean_text_length(filtered_df.iloc[1][col])
-                header_count = len(str(col))
-                base_calc = int(max(char_count, header_count) * 7 + 22)
-                if is_first_visible_column: base_calc += 30
-                width, min_width = (base_calc, 40)
+        else:
+            width, min_width = (220, 150) if col.lower() in priority_columns_lower else (120, 80)
 
-            else:
-                width, min_width = (220, 150) if col.lower() in priority_columns_lower else (120, 80)
+        pinned_value = "left" if is_first_visible_column else None
+        if is_first_visible_column: is_first_visible_column = False
 
-            pinned_value = "left" if is_first_visible_column else None
-            if is_first_visible_column: is_first_visible_column = False
+        c_low = col.lower()
+        # Default sort: % Delivery column sorts descending on load
+        is_delivery_col = "delivery" in c_low
+        sort_val   = "desc" if is_delivery_col else None
+        sort_index = 0      if is_delivery_col else None
 
-            c_low = col.lower()
-            is_delivery_col = "delivery" in c_low
-            sort_val   = "desc" if is_delivery_col else None
-            sort_index = 0      if is_delivery_col else None
+        if col == selected_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
+            gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
+                editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style,
+                sort=sort_val, sortIndex=sort_index)
+        else:
+            gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
+                editable=False, pinned=pinned_value, cellStyle=exact_mirror_style,
+                sort=sort_val, sortIndex=sort_index)
 
-            if col == selected_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
-                gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                    editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style,
-                    sort=sort_val, sortIndex=sort_index)
-            else:
-                gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                    editable=False, pinned=pinned_value, cellStyle=exact_mirror_style,
-                    sort=sort_val, sortIndex=sort_index)
-
-        gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True)
-        grid_options = gb.build()
-
-        # store in session state
-        st.session_state["_go_cache_key"] = _go_cache_key
-        st.session_state["_go_cache"]     = grid_options
-    else:
-        # reuse cached options — stock selection rerun skips full rebuild
-        grid_options = st.session_state["_go_cache"]
+    gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True)
+    grid_options = gb.build()
 
     grid_response = AgGrid(
         filtered_df, gridOptions=grid_options, theme="streamlit", update_mode=GridUpdateMode.SELECTION_CHANGED,
@@ -1524,26 +1517,12 @@ if not raw_df.empty:
     # ==========================================
     # 🎯 SELECTION WORKSPACE (LINKS + EMBED PANELS)
     # ==========================================
-    # ── persistent session-state so button clicks inside the panel
-    #    don't lose the selected row (AgGrid only fires on selection change) ──
-    if "ws_sym"      not in st.session_state: st.session_state.ws_sym      = None
-    if "ws_sel_row"  not in st.session_state: st.session_state.ws_sel_row  = None
-    if "ws_bf_cache" not in st.session_state: st.session_state.ws_bf_cache = {}
-
     selected_rows = grid_response.get("selected_rows", [])
     if selected_rows is not None and len(selected_rows) > 0:
         sel_row = selected_rows.iloc[0] if isinstance(selected_rows, pd.DataFrame) else selected_rows[0]
         sym = str(sel_row.get("_raw_symbol_", "")).strip()
-        if sym:
-            # cache so button-click reruns can still find the row
-            st.session_state.ws_sym     = sym
-            st.session_state.ws_sel_row = sel_row
-    else:
-        # rerun triggered by a button/widget inside the panel — use cache
-        sym     = st.session_state.ws_sym
-        sel_row = st.session_state.ws_sel_row
 
-    if sym and sel_row is not None:
+        if sym:
             with url_placeholder.container():
                 st.markdown(
                     f"**⚡ {sym} Links:** "
@@ -1573,80 +1552,43 @@ if not raw_df.empty:
                 _url0 = f"https://charting.nseindia.com/?symbol={sym}-EQ"
                 st.markdown(f"**NSE Interactive Chart Frame** &nbsp;|&nbsp; [🌐 Open in Browser]({_url0})", unsafe_allow_html=False)
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                # Tab 0 always auto-loads (most-used tab)
                 components.html(f'<iframe src="{_url0}" width="100%" height="{box_height}" style="border:none; border-radius:5px;"></iframe>', height=box_height+20)
 
             with ws_tabs[1]:
                 _url1 = f"https://www.equitypandit.com/historical-data/{sym.lower()}"
                 st.markdown(f"**EquityPandit Historical Matrix Data** &nbsp;|&nbsp; [🌐 Open in Browser]({_url1})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k1 = f"iframe_{sym}_1"
-                if st.session_state.get(_k1):
-                    components.html(f'<iframe src="{_url1}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load History Data", key=f"load_{_k1}", use_container_width=True):
-                        st.session_state[_k1] = True
+                components.html(f'<iframe src="{_url1}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[2]:
                 _url2 = f"https://www.equitypandit.com/share-price/{sym.lower()}#chart"
                 st.markdown(f"**Bullish / Bearish Zone Indicator** &nbsp;|&nbsp; [🌐 Open in Browser]({_url2})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k2 = f"iframe_{sym}_2"
-                if st.session_state.get(_k2):
-                    components.html(f'<iframe src="{_url2}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load Bullish/Bearish Zone", key=f"load_{_k2}", use_container_width=True):
-                        st.session_state[_k2] = True
+                components.html(f'<iframe src="{_url2}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[3]:
                 _url3 = f"https://www.screener.in/company/{sym}/consolidated/"
                 st.markdown(f"**Screener Corporate Filings** &nbsp;|&nbsp; [🌐 Open in Browser]({_url3})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k3 = f"iframe_{sym}_3"
-                if st.session_state.get(_k3):
-                    components.html(f'<iframe src="{_url3}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load Screener Documents", key=f"load_{_k3}", use_container_width=True):
-                        st.session_state[_k3] = True
+                components.html(f'<iframe src="{_url3}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[4]:
                 _url4 = f"https://zerodha.com/markets/stocks/NSE/{sym}/"
                 st.markdown(f"**Zerodha Markets Financial Performance Metrics** &nbsp;|&nbsp; [🌐 Open in Browser]({_url4})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k4 = f"iframe_{sym}_4"
-                if st.session_state.get(_k4):
-                    components.html(f'<iframe src="{_url4}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load Zerodha Portal", key=f"load_{_k4}", use_container_width=True):
-                        st.session_state[_k4] = True
+                components.html(f'<iframe src="{_url4}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[5]:
                 _url5 = f"https://marketsmithindia.com/mstool/eval/{sym.lower()}/evaluation.jsp"
                 st.markdown(f"**MarketSmith India Institutional Trading Evaluation Engine** &nbsp;|&nbsp; [🌐 Open in Browser]({_url5})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k5 = f"iframe_{sym}_5"
-                if st.session_state.get(_k5):
-                    components.html(f'<iframe src="{_url5}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load MarketSmith India", key=f"load_{_k5}", use_container_width=True):
-                        st.session_state[_k5] = True
+                components.html(f'<iframe src="{_url5}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[6]:
                 _url6 = f"https://www.tradingview.com/symbols/{sym}/"
                 st.markdown(f"**TradingView Comprehensive Asset Market Registry Summary Profile** &nbsp;|&nbsp; [🌐 Open in Browser]({_url6})")
                 st.caption("📱 If frame is blank on mobile, tap the link above to open directly.")
-                _k6 = f"iframe_{sym}_6"
-                if st.session_state.get(_k6):
-                    components.html(f'<iframe src="{_url6}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
-                else:
-                    st.info("⚡ Click below to load this panel inside the app.")
-                    if st.button("▶ Load TradingView Profile", key=f"load_{_k6}", use_container_width=True):
-                        st.session_state[_k6] = True
+                components.html(f'<iframe src="{_url6}" width="100%" height="{box_height}" style="border:none; border-radius:5px; background-color:white;"></iframe>', height=box_height+20)
 
             with ws_tabs[7]:
                 st.markdown(f"### 🤖 Ask AI About **{sym}**")
@@ -1823,13 +1765,10 @@ Formatting Requirements:
             # ==========================================
             with ws_tabs[9]:
                 st.markdown(f"### 🔬 Bottom Fishing Analysis: **{sym}**")
-                st.caption("Scores this stock on 9 key criteria for buying from the bottom. Based entirely on your live sheet data.")
+                st.caption("Scores this stock on 8 key criteria for buying from the bottom. Based entirely on your live sheet data.")
 
                 clean_sel = {k: v for k, v in sel_row.items() if not str(k).startswith('_')}
-                # ── Use cached BF score if available for this symbol ──────────
-                if sym not in st.session_state.ws_bf_cache:
-                    st.session_state.ws_bf_cache[sym] = compute_bottom_fishing_score(clean_sel, actual_cols)
-                bf_score, bf_grade, bf_reasons = st.session_state.ws_bf_cache[sym]
+                bf_score, bf_grade, bf_reasons = compute_bottom_fishing_score(clean_sel, actual_cols)
 
                 # Score gauge
                 score_color = "#16e37f" if bf_score >= 75 else ("#f4b400" if bf_score >= 55 else ("#ff9900" if bf_score >= 35 else "#ea4335"))
@@ -1858,6 +1797,7 @@ Formatting Requirements:
 | 6 | **RONW %** | 10 | Return on Net Worth ≥ 15% = strong business |
 | 7 | **Promoter Holding** | 8 | ≥ 50% shows management confidence |
 | 8 | **Zero Pledge** | 7 | No pledged shares = no financial stress |
+| 9 | **% Delivery** | 10 | ≥ 70% = institutional/genuine buying (not intraday) |
 """
                 st.markdown(criteria_md)
 
@@ -2068,10 +2008,7 @@ Be specific, data-driven, and actionable for a retail investor.
             with ws_tabs[11]:
                 st.markdown(f"### 📊 Watchlist Manager")
                 clean_sel_wl = {k: v for k, v in sel_row.items() if not str(k).startswith('_')}
-                # ── Reuse cached BF score (already computed in tab 9) ─────────
-                if sym not in st.session_state.ws_bf_cache:
-                    st.session_state.ws_bf_cache[sym] = compute_bottom_fishing_score(clean_sel_wl, actual_cols)
-                bf_score_wl, bf_grade_wl, _ = st.session_state.ws_bf_cache[sym]
+                bf_score_wl, bf_grade_wl, _ = compute_bottom_fishing_score(clean_sel_wl, actual_cols)
                 cmp_wl = str(clean_sel_wl.get(cmp_target, "")) if cmp_target else ""
 
                 # ── Add current stock ──────────────────────────────────────
@@ -2609,6 +2546,8 @@ Be specific, data-driven, and actionable for a retail investor.
             cmp_v = clean_r.get(cmp_target, "") if cmp_target else ""
             sector_col = next((c for c in actual_cols if "sector" in c.lower()), None)
             sector_v = clean_r.get(sector_col, "") if sector_col else ""
+            delivery_col = next((c for c in actual_cols if "delivery" in c.lower()), None)
+            delivery_v = clean_r.get(delivery_col, "") if delivery_col else ""
             nse_chart_url = f"https://charting.nseindia.com/?symbol={ticker}-EQ"
             symbol_link = f'<a href="{nse_chart_url}" target="_blank" style="text-decoration:none; color:#000000; font-weight:bold;">{ticker}</a>'
             bf_results.append({
@@ -2616,6 +2555,7 @@ Be specific, data-driven, and actionable for a retail investor.
                 "Score": bf_s,
                 "Grade": bf_g,
                 "CMP": cmp_v,
+                "% Delivery": delivery_v,
                 "Sector": str(sector_v)[:30],
                 "Key Reasons": " | ".join(bf_rsns[:3])
             })
@@ -2641,7 +2581,19 @@ Be specific, data-driven, and actionable for a retail investor.
         }
         """)
 
-        bf_default_widths = {"Symbol": 120, "Score": 90, "Grade": 160, "CMP": 100, "Sector": 200, "Key Reasons": 400}
+        bf_default_widths = {"Symbol": 120, "Score": 90, "Grade": 160, "CMP": 100, "% Delivery": 120, "Sector": 200, "Key Reasons": 400}
+
+        delivery_style = JsCode("""
+        function(params) {
+            let val = parseFloat(String(params.value).replace('%','').replace(',',''));
+            if (isNaN(val)) return null;
+            if (val >= 70) return { 'backgroundColor': '#e6f4ea', 'color': '#000', 'fontWeight': 'bold' };
+            if (val >= 50) return { 'backgroundColor': '#fff9e6', 'color': '#000', 'fontWeight': 'bold' };
+            if (val >= 30) return { 'backgroundColor': '#fff3e0', 'color': '#000' };
+            return { 'backgroundColor': '#fce8e6', 'color': '#000' };
+        }
+        """)
+
         for col in bf_scan_df.columns:
             if bf_sizing_mode == "✅ Fit to Row 1" and len(bf_scan_df) > 0:
                 char_count = get_clean_text_length(bf_scan_df.iloc[0][col])
@@ -2659,6 +2611,8 @@ Be specific, data-driven, and actionable for a retail investor.
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellStyle=bf_score_style)
             elif col == "Symbol":
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellRenderer=html_renderer)
+            elif col == "% Delivery":
+                bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellStyle=delivery_style)
             else:
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned)
 
