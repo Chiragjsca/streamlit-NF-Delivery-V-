@@ -369,7 +369,11 @@ def load_sheet_data_with_colors(sheet_name):
     except Exception as e:
         return pd.DataFrame()
 
+@st.cache_data(ttl=300, show_spinner=False)
 def process_hyperlinks(df, symbol_col):
+    """Build HTML hyperlinks for all link columns.
+    Cached for 300 s — matches the sheet data TTL so it only
+    rebuilds when fresh sheet data arrives, NOT on stock selections."""
     df_proc = df.copy()
     df_proc['_raw_symbol_'] = df_proc[symbol_col]
 
@@ -1443,55 +1447,73 @@ if not raw_df.empty:
     }
     """)
 
-    gb = GridOptionsBuilder.from_dataframe(filtered_df)
-    gb.configure_selection(selection_mode="single", use_checkbox=True)
-    gb.configure_side_bar(filters_panel=False, columns_panel=True)
+    # ── Cache GridOptions: only rebuild when sheet / columns / filters change ──
+    # A stock-selection rerun never changes columns or sizing → use cached opts.
+    _go_cols_sig = str(list(filtered_df.columns))
+    _go_row_sig  = (str(list(filtered_df.iloc[0]))[:120]
+                    if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0
+                    else (str(list(filtered_df.iloc[1]))[:120]
+                          if sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1
+                          else ""))
+    _go_cache_key = (f"{selected_sheet}|{selected_symbol_col}|{sizing_mode}"
+                     f"|{len(filtered_df)}|{_go_cols_sig[:300]}|{_go_row_sig}")
 
-    priority_columns_lower = ["nse code", "id", "company name", "stock name", "symbol", "industry", "sector"]
-    is_first_visible_column = True
+    if st.session_state.get("_go_cache_key") != _go_cache_key:
+        gb = GridOptionsBuilder.from_dataframe(filtered_df)
+        gb.configure_selection(selection_mode="single", use_checkbox=True)
+        gb.configure_side_bar(filters_panel=False, columns_panel=True)
 
-    for col in filtered_df.columns:
-        if col.startswith("_bg_") or col.startswith("_txt_") or col == "_raw_symbol_":
-            gb.configure_column(col, hide=True)
-            continue
+        priority_columns_lower = ["nse code", "id", "company name", "stock name", "symbol", "industry", "sector"]
+        is_first_visible_column = True
 
-        if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0:
-            char_count = get_clean_text_length(filtered_df.iloc[0][col])
-            header_count = len(str(col))
-            base_calc = int(max(char_count, header_count) * 7 + 22)
-            if is_first_visible_column: base_calc += 30
-            width, min_width = (base_calc, 40)
+        for col in filtered_df.columns:
+            if col.startswith("_bg_") or col.startswith("_txt_") or col == "_raw_symbol_":
+                gb.configure_column(col, hide=True)
+                continue
 
-        elif sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1:
-            char_count = get_clean_text_length(filtered_df.iloc[1][col])
-            header_count = len(str(col))
-            base_calc = int(max(char_count, header_count) * 7 + 22)
-            if is_first_visible_column: base_calc += 30
-            width, min_width = (base_calc, 40)
+            if sizing_mode == "✅ Fit to Row 1" and len(filtered_df) > 0:
+                char_count = get_clean_text_length(filtered_df.iloc[0][col])
+                header_count = len(str(col))
+                base_calc = int(max(char_count, header_count) * 7 + 22)
+                if is_first_visible_column: base_calc += 30
+                width, min_width = (base_calc, 40)
 
-        else:
-            width, min_width = (220, 150) if col.lower() in priority_columns_lower else (120, 80)
+            elif sizing_mode == "✅✅ Fit to Row 2" and len(filtered_df) > 1:
+                char_count = get_clean_text_length(filtered_df.iloc[1][col])
+                header_count = len(str(col))
+                base_calc = int(max(char_count, header_count) * 7 + 22)
+                if is_first_visible_column: base_calc += 30
+                width, min_width = (base_calc, 40)
 
-        pinned_value = "left" if is_first_visible_column else None
-        if is_first_visible_column: is_first_visible_column = False
+            else:
+                width, min_width = (220, 150) if col.lower() in priority_columns_lower else (120, 80)
 
-        c_low = col.lower()
-        # Default sort: % Delivery column sorts descending on load
-        is_delivery_col = "delivery" in c_low
-        sort_val   = "desc" if is_delivery_col else None
-        sort_index = 0      if is_delivery_col else None
+            pinned_value = "left" if is_first_visible_column else None
+            if is_first_visible_column: is_first_visible_column = False
 
-        if col == selected_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
-            gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style,
-                sort=sort_val, sortIndex=sort_index)
-        else:
-            gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
-                editable=False, pinned=pinned_value, cellStyle=exact_mirror_style,
-                sort=sort_val, sortIndex=sort_index)
+            c_low = col.lower()
+            is_delivery_col = "delivery" in c_low
+            sort_val   = "desc" if is_delivery_col else None
+            sort_index = 0      if is_delivery_col else None
 
-    gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True)
-    grid_options = gb.build()
+            if col == selected_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
+                gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
+                    editable=False, pinned=pinned_value, cellRenderer=html_renderer, cellStyle=exact_mirror_style,
+                    sort=sort_val, sortIndex=sort_index)
+            else:
+                gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
+                    editable=False, pinned=pinned_value, cellStyle=exact_mirror_style,
+                    sort=sort_val, sortIndex=sort_index)
+
+        gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True)
+        grid_options = gb.build()
+
+        # store in session state
+        st.session_state["_go_cache_key"] = _go_cache_key
+        st.session_state["_go_cache"]     = grid_options
+    else:
+        # reuse cached options — stock selection rerun skips full rebuild
+        grid_options = st.session_state["_go_cache"]
 
     grid_response = AgGrid(
         filtered_df, gridOptions=grid_options, theme="streamlit", update_mode=GridUpdateMode.SELECTION_CHANGED,
