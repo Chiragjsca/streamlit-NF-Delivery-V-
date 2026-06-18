@@ -923,7 +923,22 @@ def compute_bottom_fishing_score(row, actual_cols):
         else:
             reasons.append(f"❌ High Pledge: {pledge:.1f}%")
 
-    # 9. Good Revenue / Net Sales (max 0 pts — qualitative flag)
+    # 9. High % Delivery (max 10 pts) — genuine buying vs intraday speculation
+    delivery_pct = get_num(["% delivery", "delivery"])
+    if delivery_pct is not None:
+        if delivery_pct >= 70:
+            score += 10
+            reasons.append(f"✅ % Delivery: {delivery_pct:.1f}% (strong institutional buying)")
+        elif delivery_pct >= 50:
+            score += 6
+            reasons.append(f"🟡 % Delivery: {delivery_pct:.1f}% (moderate genuine buying)")
+        elif delivery_pct >= 30:
+            score += 3
+            reasons.append(f"⚠️ % Delivery: {delivery_pct:.1f}% (mostly intraday)")
+        else:
+            reasons.append(f"❌ % Delivery: {delivery_pct:.1f}% (speculative / intraday dominated)")
+
+    # 10. Good Revenue / Net Sales (max 0 pts — qualitative flag)
     sales = get_num(["net sales", "net sale"])
     if sales and sales > 0:
         reasons.append(f"📊 Net Sales: ₹{sales:.1f} Cr")
@@ -1782,6 +1797,7 @@ Formatting Requirements:
 | 6 | **RONW %** | 10 | Return on Net Worth ≥ 15% = strong business |
 | 7 | **Promoter Holding** | 8 | ≥ 50% shows management confidence |
 | 8 | **Zero Pledge** | 7 | No pledged shares = no financial stress |
+| 9 | **% Delivery** | 10 | ≥ 70% = institutional/genuine buying (not intraday) |
 """
                 st.markdown(criteria_md)
 
@@ -2530,6 +2546,8 @@ Be specific, data-driven, and actionable for a retail investor.
             cmp_v = clean_r.get(cmp_target, "") if cmp_target else ""
             sector_col = next((c for c in actual_cols if "sector" in c.lower()), None)
             sector_v = clean_r.get(sector_col, "") if sector_col else ""
+            delivery_col = next((c for c in actual_cols if "delivery" in c.lower()), None)
+            delivery_v = clean_r.get(delivery_col, "") if delivery_col else ""
             nse_chart_url = f"https://charting.nseindia.com/?symbol={ticker}-EQ"
             symbol_link = f'<a href="{nse_chart_url}" target="_blank" style="text-decoration:none; color:#000000; font-weight:bold;">{ticker}</a>'
             bf_results.append({
@@ -2537,6 +2555,7 @@ Be specific, data-driven, and actionable for a retail investor.
                 "Score": bf_s,
                 "Grade": bf_g,
                 "CMP": cmp_v,
+                "% Delivery": delivery_v,
                 "Sector": str(sector_v)[:30],
                 "Key Reasons": " | ".join(bf_rsns[:3])
             })
@@ -2562,7 +2581,19 @@ Be specific, data-driven, and actionable for a retail investor.
         }
         """)
 
-        bf_default_widths = {"Symbol": 120, "Score": 90, "Grade": 160, "CMP": 100, "Sector": 200, "Key Reasons": 400}
+        bf_default_widths = {"Symbol": 120, "Score": 90, "Grade": 160, "CMP": 100, "% Delivery": 120, "Sector": 200, "Key Reasons": 400}
+
+        delivery_style = JsCode("""
+        function(params) {
+            let val = parseFloat(String(params.value).replace('%','').replace(',',''));
+            if (isNaN(val)) return null;
+            if (val >= 70) return { 'backgroundColor': '#e6f4ea', 'color': '#000', 'fontWeight': 'bold' };
+            if (val >= 50) return { 'backgroundColor': '#fff9e6', 'color': '#000', 'fontWeight': 'bold' };
+            if (val >= 30) return { 'backgroundColor': '#fff3e0', 'color': '#000' };
+            return { 'backgroundColor': '#fce8e6', 'color': '#000' };
+        }
+        """)
+
         for col in bf_scan_df.columns:
             if bf_sizing_mode == "✅ Fit to Row 1" and len(bf_scan_df) > 0:
                 char_count = get_clean_text_length(bf_scan_df.iloc[0][col])
@@ -2580,6 +2611,8 @@ Be specific, data-driven, and actionable for a retail investor.
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellStyle=bf_score_style)
             elif col == "Symbol":
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellRenderer=html_renderer)
+            elif col == "% Delivery":
+                bf_gb.configure_column(col, width=dyn_w, pinned=pinned, cellStyle=delivery_style)
             else:
                 bf_gb.configure_column(col, width=dyn_w, pinned=pinned)
 
