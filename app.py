@@ -1742,6 +1742,28 @@ if not raw_df.empty:
     if delivery_target and delivery_target not in core_sequence:
         core_sequence.append(delivery_target)
 
+    deliv_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
+    if deliv_target and deliv_target not in core_sequence:
+        core_sequence.append(deliv_target)
+
+    vol_target = next((c for c in actual_cols if "Volume" in c.lower()), None)
+    if vol_target and vol_target not in core_sequence: core_sequence.append(vol_target)
+
+    close_target = next((c for c in actual_cols if "close price" in c.lower() or "prev" in c.lower()), None)
+    if close_target and close_target not in core_sequence: core_sequence.append(close_target)
+
+    cmp_target = next((c for c in actual_cols if "cmp" in c.lower()), None)
+    if cmp_target and cmp_target not in core_sequence: core_sequence.append(cmp_target)
+
+    pct_target = next((c for c in actual_cols if "price %" in c.lower()), None)
+    if pct_target and pct_target not in core_sequence: core_sequence.append(pct_target)
+
+    high_target = next((c for c in actual_cols if "52" in c.lower() and "high" in c.lower() and "date" not in c.lower() and "%" not in c.lower()), None)
+    if high_target and high_target not in core_sequence: core_sequence.append(high_target)
+
+    low_target = next((c for c in actual_cols if "52" in c.lower() and "low" in c.lower() and "date" not in c.lower() and "%" not in c.lower()), None)
+    if low_target and low_target not in core_sequence: core_sequence.append(low_target)
+
     # NOTE: these "smart-guess" columns are always detected, even when a custom priority
     # order is configured below — several other features further down the app (Watchlist,
     # Breakout Finder, Horizon Performance, etc.) rely on these exact variables existing.
