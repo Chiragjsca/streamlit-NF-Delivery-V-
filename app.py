@@ -1737,6 +1737,11 @@ if not raw_df.empty:
     if selected_symbol_col in filtered_df.columns:
         core_sequence.append(selected_symbol_col)
 
+    # ── % Delivery goes 2nd — right after NSE Code ──────────────────────────
+    delivery_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
+    if delivery_target and delivery_target not in core_sequence:
+        core_sequence.append(delivery_target)
+
     # NOTE: these "smart-guess" columns are always detected, even when a custom priority
     # order is configured below — several other features further down the app (Watchlist,
     # Breakout Finder, Horizon Performance, etc.) rely on these exact variables existing.
