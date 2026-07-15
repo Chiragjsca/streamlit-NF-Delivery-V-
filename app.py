@@ -3046,7 +3046,7 @@ Be specific, data-driven, and actionable for a retail investor.
                 with st.expander(f"🕯️ Price Chart & Technical Indicators — {sym}", expanded=True):
 
                     hist_period = st.select_slider(
-                        "History range:", options=["0.025mo", 0.05mo", 0.1mo", , 0.15mo", 0.25mo", "0.5mo", "1mo", "2mo", "3mo", "4mo", "5mo", "6mo", "1y", "2y", "3y", "4y", "5y", "6y", "7y", "10y"],
+                        "History range:", options=["1day", "2day", "3day", "4day", "5day", "7day", "10day", "12day", "15day", "21day", "27day", "25day", "1mo", "2mo", "3mo", "4mo", "5mo", "6mo", "1y", "2y", "3y", "4y", "5y", "6y", "7y", "10y"],
                         value="1y", key=f"chart_period_{sym}"
                     )
 
