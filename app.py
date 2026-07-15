@@ -1342,28 +1342,41 @@ if not raw_df.empty:
     if selected_symbol_col in filtered_df.columns:
         core_sequence.append(selected_symbol_col)
 
-    # ── % Delivery goes 2nd — right after NSE Code ──────────────────────────
+    # NOTE: these "smart-guess" columns are always detected, even when a custom priority
+    # order is configured below — several other features further down the app (Watchlist,
+    # Breakout Finder, Horizon Performance, etc.) rely on these exact variables existing.
+    deliv_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
     delivery_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
-    if delivery_target and delivery_target not in core_sequence:
-        core_sequence.append(delivery_target)
-
-    vol_target = next((c for c in actual_cols if "Volume" in c.lower()), None)
-    if vol_target and vol_target not in core_sequence: core_sequence.append(vol_target)
-
+    vol_target = next((c for c in actual_cols if "volume" in c.lower()), None)
     close_target = next((c for c in actual_cols if "close price" in c.lower() or "prev" in c.lower()), None)
-    if close_target and close_target not in core_sequence: core_sequence.append(close_target)
-
     cmp_target = next((c for c in actual_cols if "cmp" in c.lower()), None)
-    if cmp_target and cmp_target not in core_sequence: core_sequence.append(cmp_target)
-
     pct_target = next((c for c in actual_cols if "price %" in c.lower()), None)
-    if pct_target and pct_target not in core_sequence: core_sequence.append(pct_target)
-
     high_target = next((c for c in actual_cols if "52" in c.lower() and "high" in c.lower() and "date" not in c.lower() and "%" not in c.lower()), None)
-    if high_target and high_target not in core_sequence: core_sequence.append(high_target)
-
     low_target = next((c for c in actual_cols if "52" in c.lower() and "low" in c.lower() and "date" not in c.lower() and "%" not in c.lower()), None)
-    if low_target and low_target not in core_sequence: core_sequence.append(low_target)
+
+    # ── Additional smart-guess columns used by the Multi-Horizon Performance
+    # Summary Matrix and the Bottom Fishing Scanner (RSI, Volume Trend,
+    # Breakout Signal, Trend, MACD Crossover, Buy Signal, Diff from 200 DMA) ──
+    rsi_target = next((c for c in actual_cols if "rsi" in c.lower()), None)
+    volume_trend_target = next((c for c in actual_cols if "volume trend" in c.lower()), None)
+    breakout_signal_target = next((c for c in actual_cols if "breakout signal" in c.lower()), None)
+    trend_target = next((c for c in actual_cols if "trend" in c.lower() and c != volume_trend_target and "dma" not in c.lower()), None)
+    macd_crossover_target = next((c for c in actual_cols if "macd" in c.lower()), None)
+    buy_signal_target = next((c for c in actual_cols if "buy signal" in c.lower()), None)
+    diff_200_target = next((c for c in actual_cols if "diff" in c.lower() and "200" in c.lower()), None)
+
+    # If this sheet has a priority order configured (COLUMN_ORDER_BY_NAME /
+    # COLUMN_ORDER_BY_LETTER near the top of the file), use it for column placement.
+    # Otherwise fall back to the original smart-guess order above.
+    configured_priority = get_priority_columns(selected_sheet, actual_cols)
+    if configured_priority:
+        for col in configured_priority:
+            if col not in core_sequence:
+                core_sequence.append(col)
+    else:
+        for target in (vol_target, close_target, cmp_target, pct_target, high_target, low_target):
+            if target and target not in core_sequence:
+                core_sequence.append(target)
 
     all_other_fields = [c for c in filtered_df.columns if c not in core_sequence and not c.startswith("_bg_") and not c.startswith("_txt_") and c != "_raw_symbol_"]
     hidden_meta_attributes = [c for c in filtered_df.columns if c.startswith("_bg_") or c.startswith("_txt_") or c == "_raw_symbol_"]
