@@ -1345,7 +1345,6 @@ if not raw_df.empty:
     # NOTE: these "smart-guess" columns are always detected, even when a custom priority
     # order is configured below — several other features further down the app (Watchlist,
     # Breakout Finder, Horizon Performance, etc.) rely on these exact variables existing.
-    deliv_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
     delivery_target = next((c for c in actual_cols if "delivery" in c.lower()), None)
     vol_target = next((c for c in actual_cols if "volume" in c.lower()), None)
     close_target = next((c for c in actual_cols if "close price" in c.lower() or "prev" in c.lower()), None)
