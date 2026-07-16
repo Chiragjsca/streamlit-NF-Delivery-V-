@@ -3585,7 +3585,7 @@ Be specific, data-driven, and actionable for a retail investor.
                                 threshold=dict(line=dict(color="#c62828", width=3), value=float(last_rsi14)),
                             ),
                         ))
-                        fig_rsi_gauge.update_layout(template="plotly_white", height=260, margin=dict(t=50, b=10, l=30, r=30))
+                        fig_rsi_gauge.update_layout(template="plotly_white", height=260, width=260, margin=dict(t=50, b=10, l=30, r=30))
                         st.plotly_chart(fig_rsi_gauge, use_container_width=True, key=f"gauge_rsi_{sym}")
                         st.caption("Below 30 = oversold, above 70 = overbought. A gauge, not a Sankey — RSI doesn't split into parts.")
                     else:
@@ -3614,7 +3614,7 @@ Be specific, data-driven, and actionable for a retail investor.
                                 threshold=dict(line=dict(color="#c62828", width=3), value=_pos_pct),
                             ),
                         ))
-                        fig_range_gauge.update_layout(template="plotly_white", height=280, margin=dict(t=65, b=10, l=30, r=30))
+                        fig_range_gauge.update_layout(template="plotly_white", height=280, width=260, margin=dict(t=65, b=10, l=30, r=30))
                         st.plotly_chart(fig_range_gauge, use_container_width=True, key=f"gauge_52wrange_{sym}")
                         st.caption("0% = at the 52-week low, 100% = at the 52-week high. A gauge, not a Sankey — price levels aren't a splittable quantity.")
                     else:
