@@ -2383,7 +2383,7 @@ if not raw_df.empty:
             with url_placeholder.container():
                 st.markdown(
                     f"**⚡ {sym} Links:** "
-                    f"[Trading View (🔗)](https://www.tradingview.com/symbols/{sym}/) &nbsp;|&nbsp; "
+                    f"[TV (🔗)](https://www.tradingview.com/symbols/{sym}/) &nbsp;|&nbsp; "
                     f"[History Data (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
                     f"[Screener (🔗)](https://www.screener.in/company/{sym}) &nbsp;|&nbsp; "
                     f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{sym}) &nbsp;|&nbsp; "
@@ -2391,8 +2391,8 @@ if not raw_df.empty:
                     f"[Market Smith (🔗)](https://marketsmithindia.com/mstool/eval/{sym}/evaluation.jsp) &nbsp;|&nbsp; "
                     f"[Whalesbook (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
                     f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
-                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym})"
-                    f"[NSE URL (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
+                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym}) &nbsp;|&nbsp; "
+                    f"[G URL (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
                 )
 
             st.markdown(f"---")
