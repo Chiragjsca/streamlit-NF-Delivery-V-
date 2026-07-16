@@ -2060,13 +2060,13 @@ if not raw_df.empty:
 
                 st.markdown(
                     f"🔗 **More links for {clicked_symbol}:** "
-                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[Trading View (🔗)](https://www.tradingview.com/symbols/{clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[History Data (🔗)](https://www.equitypandit.com/historical-data/{clicked_symbol}) &nbsp;|&nbsp; "
                     f"[Screener (🔗)](https://www.screener.in/company/{clicked_symbol}) &nbsp;|&nbsp; "
                     f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{clicked_symbol}) &nbsp;|&nbsp; "
                     f"[Chartlink (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={clicked_symbol}) &nbsp;|&nbsp; "
                     f"[Market Smith (🔗)](https://marketsmithindia.com/mstool/eval/{clicked_symbol}/evaluation.jsp) &nbsp;|&nbsp; "
+                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={clicked_symbol})"
                 )
             else:
