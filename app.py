@@ -2344,7 +2344,7 @@ if not raw_df.empty:
         is_delivery_col = "delivery" in c_low
         sort_val   = "desc" if is_delivery_col else None
         sort_index = 0      if is_delivery_col else None
-        
+
         if is_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
                 editable=False, pinned=pinned_value, lockPinned=is_symbol_col, suppressMovable=is_symbol_col,
@@ -2353,6 +2353,7 @@ if not raw_df.empty:
         else:
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
                 editable=False, pinned=pinned_value, cellStyle=exact_mirror_style)
+                sort=sort_val, sortIndex=sort_index)
 
     gb.configure_grid_options(domLayout="normal", rowHeight=35, headerHeight=45, enableCellTextSelection=True, ensureDomOrder=True, alwaysShowHorizontalScroll=True, suppressColumnVirtualisation=True)
     grid_options = gb.build()
