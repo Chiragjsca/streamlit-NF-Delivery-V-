@@ -2388,7 +2388,7 @@ if not raw_df.empty:
                     f"[NSE (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym}) &nbsp;|&nbsp; "
                     f"[NC (🔗)](https://www.charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
                     f"[% (🔗)](https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern#) &nbsp;|&nbsp; "
-                    f"[EQ% (🔗)](https://https://www.nseindia.com/report-detail/eq_security) &nbsp;|&nbsp; "
+                    f"[EQ (🔗)](https://www.nseindia.com/report-detail/eq_security) &nbsp;|&nbsp; "
                     f"[CL (🔗)](https://www.chartink.com/stocks-new?symbol={sym}) &nbsp;|&nbsp; "
                     f"[CL2 (🔗)](https://www.chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={sym}) &nbsp;|&nbsp; "
                     f"[History (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
