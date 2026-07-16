@@ -2145,7 +2145,9 @@ if not raw_df.empty:
         _render_top30_market_lists("dash")
 
         # ---------- Chart row 4: 52-week range positioning + Difference from 200 DMA positioning (both clickable → NSE chart + quick-links) ----------
-        dash_c7, dash_c8 = st.columns(2)
+        # Replaced st.columns(2) with st.container() so both charts take 100% width and stack vertically
+        dash_c7 = st.container()
+        dash_c8 = st.container()
 
         with dash_c7:
             if cmp_series.notna().any() and high_series.notna().any() and low_series.notna().any():
@@ -2344,7 +2346,7 @@ if not raw_df.empty:
         is_delivery_col = "delivery" in c_low
         sort_val   = "desc" if is_delivery_col else None
         sort_index = 0      if is_delivery_col else None
-        
+
         if is_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
                 editable=False, pinned=pinned_value, lockPinned=is_symbol_col, suppressMovable=is_symbol_col,
