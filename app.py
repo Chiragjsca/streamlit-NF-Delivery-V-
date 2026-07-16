@@ -2389,6 +2389,8 @@ if not raw_df.empty:
                     f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{sym}) &nbsp;|&nbsp; "
                     f"[Chartlink (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={sym}) &nbsp;|&nbsp; "
                     f"[Market Smith (🔗)](https://marketsmithindia.com/mstool/eval/{sym}/evaluation.jsp) &nbsp;|&nbsp; "
+                    f"[Whalesbook (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
+                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
                     f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym})"
                 )
 
