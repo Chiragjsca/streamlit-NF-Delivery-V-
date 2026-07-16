@@ -2060,6 +2060,7 @@ if not raw_df.empty:
 
                 st.markdown(
                     f"🔗 **More links for {clicked_symbol}:** "
+                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[Trading View (🔗)](https://www.tradingview.com/symbols/{clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[History Data (🔗)](https://www.equitypandit.com/historical-data/{clicked_symbol}) &nbsp;|&nbsp; "
                     f"[Screener (🔗)](https://www.screener.in/company/{clicked_symbol}) &nbsp;|&nbsp; "
