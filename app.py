@@ -2340,6 +2340,11 @@ if not raw_df.empty:
         if is_first_visible_column: is_first_visible_column = False
 
         c_low = col.lower()
+        # Default sort: % Delivery column sorts descending on load
+        is_delivery_col = "delivery" in c_low
+        sort_val   = "desc" if is_delivery_col else None
+        sort_index = 0      if is_delivery_col else None
+        
         if is_symbol_col or any(k in c_low for k in ["trading view", "history data", "screener", "zerodha", "chartlink", "market smith", "official nse", "nse"]):
             gb.configure_column(col, width=width, minWidth=min_width, sortable=True, filter=True, resizable=True,
                 editable=False, pinned=pinned_value, lockPinned=is_symbol_col, suppressMovable=is_symbol_col,
