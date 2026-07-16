@@ -2384,7 +2384,7 @@ if not raw_df.empty:
                 st.markdown(
                     f"**⚡ {sym} Links:** "
                     f"[TV (🔗)](https://www.tradingview.com/symbols/{sym}/) &nbsp;|&nbsp; "
-                    f"[TVC (🔗)](www.tradingview.com/chart/?symbol=NSE%3A{sym}/) &nbsp;|&nbsp; "
+                    f"[TVC (🔗)](www.tradingview.com/chart/?symbol=NSE%3A{sym}) &nbsp;|&nbsp; "
                     f"[History (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
                     f"[Screener (🔗)](https://www.screener.in/company/{sym}) &nbsp;|&nbsp; "
                     f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{sym}) &nbsp;|&nbsp; "
