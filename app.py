@@ -2384,15 +2384,16 @@ if not raw_df.empty:
                 st.markdown(
                     f"**⚡ {sym} Links:** "
                     f"[TV (🔗)](https://www.tradingview.com/symbols/{sym}/) &nbsp;|&nbsp; "
-                    f"[History Data (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
+                    f"[TVC (🔗)](www.tradingview.com/chart/?symbol=NSE%3A{sym}/) &nbsp;|&nbsp; "
+                    f"[History (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
                     f"[Screener (🔗)](https://www.screener.in/company/{sym}) &nbsp;|&nbsp; "
                     f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{sym}) &nbsp;|&nbsp; "
                     f"[Chartlink (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={sym}) &nbsp;|&nbsp; "
-                    f"[Market Smith (🔗)](https://marketsmithindia.com/mstool/eval/{sym}/evaluation.jsp) &nbsp;|&nbsp; "
-                    f"[Whalesbook (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
-                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
-                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym}) &nbsp;|&nbsp; "
-                    f"[G URL (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
+                    f"[MS (🔗)](https://marketsmithindia.com/mstool/eval/{sym}/evaluation.jsp) &nbsp;|&nbsp; "
+                    f"[WB (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
+                    f"[NSEC (🔗)](https://charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
+                    f"[NSE (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym}) &nbsp;|&nbsp; "
+                    f"[GFi (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
                 )
 
             st.markdown(f"---")
