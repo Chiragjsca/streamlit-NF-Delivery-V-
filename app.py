@@ -2392,6 +2392,7 @@ if not raw_df.empty:
                     f"[Whalesbook (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
                     f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
                     f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym})"
+                    f"[NSE URL (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
                 )
 
             st.markdown(f"---")
