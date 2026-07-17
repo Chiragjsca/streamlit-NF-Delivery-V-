@@ -2060,15 +2060,19 @@ if not raw_df.empty:
 
                 st.markdown(
                     f"🔗 **More links for {clicked_symbol}:** "
-                    f"[Trading View (🔗)](https://www.tradingview.com/symbols/{clicked_symbol}/) &nbsp;|&nbsp; "
-                    f"[History Data (🔗)](https://www.equitypandit.com/historical-data/{clicked_symbol}) &nbsp;|&nbsp; "
-                    f"[Screener (🔗)](https://www.screener.in/company/{clicked_symbol}) &nbsp;|&nbsp; "
-                    f"[Zerodha (🔗)](https://zerodha.com/markets/stocks/NSE/{clicked_symbol}) &nbsp;|&nbsp; "
-                    f"[Chartlink (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={clicked_symbol}) &nbsp;|&nbsp; "
-                    f"[Market Smith (🔗)](https://marketsmithindia.com/mstool/eval/{clicked_symbol}/evaluation.jsp) &nbsp;|&nbsp; "
-                    f"[Whalesbook (🔗)](https://www.whalesbook.com/company/profile/{clicked_symbol}/) &nbsp;|&nbsp; "
-                    f"[NSE Chart (🔗)](https://charting.nseindia.com/?symbol={clicked_symbol}-EQ) &nbsp;|&nbsp; "
-                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={clicked_symbol})"
+                    f"[TV (🔗)](https://www.tradingview.com/symbols/{clicked_symbol}/) &nbsp;|&nbsp; "
+                    f"[TVC (🔗)](https://www.tradingview.com/chart/?symbol=NSE%3A{clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[NC (🔗)](https://www.charting.nseindia.com/?symbol={clicked_symbol}-EQ) &nbsp;|&nbsp; "
+                    f"[CL (🔗)](https://www.chartink.com/stocks-new?symbol={clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[CL2 (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[Hist (🔗)](https://www.equitypandit.com/historical-data/{clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[Scr (🔗)](https://www.screener.in/company/{clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[MS (🔗)](https://marketsmithindia.com/mstool/eval/{clicked_symbol}/evaluation.jsp) &nbsp;|&nbsp; "
+                    f"[ZK (🔗)](https://zerodha.com/markets/stocks/NSE/{clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[WB (🔗)](https://www.whalesbook.com/company/profile/{clicked_symbol}/) &nbsp;|&nbsp; "
+                    f"[S (🔗)](https://www.stockanalysis.com/quote/nse/{clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[GFi (🔗)](https://www.google.com/finance/beta/quote/{clicked_symbol}:NSE)"
                 )
             else:
                 st.caption("Click any dot above to select a stock — its NSE chart button and quick-links will appear here.")
@@ -2388,7 +2392,10 @@ if not raw_df.empty:
                     f"[NSE (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={sym}) &nbsp;|&nbsp; "
                     f"[NC (🔗)](https://www.charting.nseindia.com/?symbol={sym}-EQ) &nbsp;|&nbsp; "
                     f"[% (🔗)](https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern#) &nbsp;|&nbsp; "
+                    f"[%K (🔗)](https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern#) &nbsp;|&nbsp; "
                     f"[EQ (🔗)](https://www.nseindia.com/report-detail/eq_security) &nbsp;|&nbsp; "
+                    f"[AZ (🔗)](https://https://www.nseindia.com/companies-listing/corporate-filings-application) &nbsp;|&nbsp; "
+                    f"[Fin (🔗)](https://https://www.nseindia.com/companies-listing/corporate-filings-financial-results-comparision) &nbsp;|&nbsp; "
                     f"[CL (🔗)](https://www.chartink.com/stocks-new?symbol={sym}) &nbsp;|&nbsp; "
                     f"[CL2 (🔗)](https://www.chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={sym}) &nbsp;|&nbsp; "
                     f"[History (🔗)](https://www.equitypandit.com/historical-data/{sym}) &nbsp;|&nbsp; "
@@ -2396,7 +2403,7 @@ if not raw_df.empty:
                     f"[MS (🔗)](https://marketsmithindia.com/mstool/eval/{sym}/evaluation.jsp) &nbsp;|&nbsp; "
                     f"[ZK (🔗)](https://www.zerodha.com/markets/stocks/NSE/{sym}) &nbsp;|&nbsp; "
                     f"[WB (🔗)](https://www.whalesbook.com/company/profile/{sym}/) &nbsp;|&nbsp; "
-                    f"[Sanalysis (🔗)](https://www.stockanalysis.com/quote/nse/{sym}) &nbsp;|&nbsp; "
+                    f"[S (🔗)](https://www.stockanalysis.com/quote/nse/{sym}) &nbsp;|&nbsp; "
                     f"[GFi (🔗)](https://www.google.com/finance/beta/quote/{sym}:NSE)"
                 )
 
