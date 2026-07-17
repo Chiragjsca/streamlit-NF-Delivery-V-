@@ -2062,7 +2062,7 @@ if not raw_df.empty:
                     f"🔗 **More links for {clicked_symbol}:** "
                     f"[TV (🔗)](https://www.tradingview.com/symbols/{clicked_symbol}/) &nbsp;|&nbsp; "
                     f"[TVC (🔗)](https://www.tradingview.com/chart/?symbol=NSE%3A{clicked_symbol}) &nbsp;|&nbsp; "
-                    f"[NSE URL (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={clicked_symbol}) &nbsp;|&nbsp; "
+                    f"[NSE (🔗)](https://www.nseindia.com/get-quotes/equity?symbol={clicked_symbol}) &nbsp;|&nbsp; "
                     f"[NC (🔗)](https://www.charting.nseindia.com/?symbol={clicked_symbol}-EQ) &nbsp;|&nbsp; "
                     f"[CL (🔗)](https://www.chartink.com/stocks-new?symbol={clicked_symbol}) &nbsp;|&nbsp; "
                     f"[CL2 (🔗)](https://chartink.com/stocks-new?load-snapshot=exponential-moving-average-simple-moving-average-simple-moving-average-moving-average-convergence-divergence-chart-snapshot-175&symbol={clicked_symbol}) &nbsp;|&nbsp; "
